@@ -1,106 +1,47 @@
-type ApprovalForAll @entity(immutable: true) {
-  id: Bytes!
-  account: Bytes! # address
-  operator: Bytes! # address
-  approved: Boolean! # bool
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type Created @entity(immutable: true) {
-  id: Bytes!
+type Creation @entity {
+  id: ID!
   creationId: BigInt! # uint256
   creator: Bytes! # address
   space: Bytes! # address
   uri: String! # string
   price: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+  mintedAmount: BigInt!
+  timestamp: BigInt!
 }
 
-type CreationUpdated @entity(immutable: true) {
-  id: Bytes!
+type Minter @entity {
+  id: ID!
   creationId: BigInt! # uint256
-  creator: Bytes! # address
-  uri: String! # string
-  price: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+  minter: Bytes! # address
+  amount: Int!
 }
 
-type FeePercentUpdated @entity(immutable: true) {
-  id: Bytes!
-  creatorFeePercent: BigInt! # uint256
-  curatorFeePercent: BigInt! # uint256
-  protocolFeePercent: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type Minted @entity(immutable: true) {
-  id: Bytes!
+type MintRecord @entity(immutable: true) {
+  id: ID!
   creationId: BigInt! # uint256
   minter: Bytes! # address
   curator: Bytes! # address
   amount: BigInt! # uint256
   price: BigInt! # uint256
   mark: String! # string
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+  timestamp: BigInt!
+  creation: Creation!
 }
 
-type OwnershipTransferred @entity(immutable: true) {
-  id: Bytes!
-  previousOwner: Bytes! # address
-  newOwner: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Tip @entity {
+  id: ID!
+  uri: String!
+  receiver: Bytes! # address
+  totalAmount: BigInt! # uint256
 }
 
-type ProtocolFeeToUpdated @entity(immutable: true) {
-  id: Bytes!
-  previousFeeTo: Bytes! # address
-  newFeeTo: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type TransferBatch @entity(immutable: true) {
-  id: Bytes!
-  operator: Bytes! # address
-  from: Bytes! # address
-  to: Bytes! # address
-  ids: [BigInt!]! # uint256[]
-  values: [BigInt!]! # uint256[]
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type TransferSingle @entity(immutable: true) {
-  id: Bytes!
-  operator: Bytes! # address
-  from: Bytes! # address
-  to: Bytes! # address
-  CreationFactory_id: BigInt! # uint256
-  value: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type URI @entity(immutable: true) {
-  id: Bytes!
-  value: String! # string
-  CreationFactory_id: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type TipRecord @entity(immutable: true) {
+  id: ID!
+  requestId: BigInt! # uint256
+  tipper: Bytes! # address
+  receiver: Bytes! # address
+  amount: BigInt! # uint256
+  uri: String!
+  tipperRewardPercent: BigInt! # uint256
+  timestamp: BigInt!
 }

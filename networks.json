@@ -3,6 +3,10 @@
     "CreationFactory": {
       "address": "0x500b941D963D4D1F8a8089e65EfEC57eC0Ce29b9",
       "startBlock": 22255803
+    },
+    "Tip": {
+      "address": "0x37bE56751a9A0358FbfbA871795f5449ba66519d",
+      "startBlock": 22255813
     }
   }
 }

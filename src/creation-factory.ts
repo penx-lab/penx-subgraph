@@ -1,3 +1,4 @@
+import { BigInt } from "@graphprotocol/graph-ts";
 import {
   ApprovalForAll as ApprovalForAllEvent,
   Created as CreatedEvent,
@@ -8,176 +9,60 @@ import {
   ProtocolFeeToUpdated as ProtocolFeeToUpdatedEvent,
   TransferBatch as TransferBatchEvent,
   TransferSingle as TransferSingleEvent,
-  URI as URIEvent
-} from "../generated/CreationFactory/CreationFactory"
-import {
-  ApprovalForAll,
-  Created,
-  CreationUpdated,
-  FeePercentUpdated,
-  Minted,
-  OwnershipTransferred,
-  ProtocolFeeToUpdated,
-  TransferBatch,
-  TransferSingle,
-  URI
-} from "../generated/schema"
-
-export function handleApprovalForAll(event: ApprovalForAllEvent): void {
-  let entity = new ApprovalForAll(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.account = event.params.account
-  entity.operator = event.params.operator
-  entity.approved = event.params.approved
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
+  URI as URIEvent,
+} from "../generated/CreationFactory/CreationFactory";
+import { Creation, MintRecord, Minter } from "../generated/schema";
 
 export function handleCreated(event: CreatedEvent): void {
-  let entity = new Created(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.creationId = event.params.creationId
-  entity.creator = event.params.creator
-  entity.space = event.params.space
-  entity.uri = event.params.uri
-  entity.price = event.params.price
+  let creation = new Creation(event.params.creationId.toString());
+  creation.creationId = event.params.creationId;
+  creation.creator = event.params.creator;
+  creation.space = event.params.space;
+  creation.uri = event.params.uri;
+  creation.price = event.params.price;
+  creation.mintedAmount = BigInt.fromI32(0);
+  creation.timestamp = event.block.timestamp;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleCreationUpdated(event: CreationUpdatedEvent): void {
-  let entity = new CreationUpdated(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.creationId = event.params.creationId
-  entity.creator = event.params.creator
-  entity.uri = event.params.uri
-  entity.price = event.params.price
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleFeePercentUpdated(event: FeePercentUpdatedEvent): void {
-  let entity = new FeePercentUpdated(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.creatorFeePercent = event.params.creatorFeePercent
-  entity.curatorFeePercent = event.params.curatorFeePercent
-  entity.protocolFeePercent = event.params.protocolFeePercent
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
+  creation.save();
 }
 
 export function handleMinted(event: MintedEvent): void {
-  let entity = new Minted(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.creationId = event.params.creationId
-  entity.minter = event.params.minter
-  entity.curator = event.params.curator
-  entity.amount = event.params.amount
-  entity.price = event.params.price
-  entity.mark = event.params.mark
+  let record = new MintRecord(
+    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+  );
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  record.creationId = event.params.creationId;
+  record.minter = event.params.minter;
+  record.curator = event.params.curator;
+  record.amount = event.params.amount;
+  record.price = event.params.price;
+  record.mark = event.params.mark;
+  record.timestamp = event.block.timestamp;
 
-  entity.save()
-}
+  const minterId =
+    event.params.minter.toHexString() +
+    "-" +
+    event.params.creationId.toString();
 
-export function handleOwnershipTransferred(
-  event: OwnershipTransferredEvent
-): void {
-  let entity = new OwnershipTransferred(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.previousOwner = event.params.previousOwner
-  entity.newOwner = event.params.newOwner
+  let minter = Minter.load(minterId);
+  if (!minter) {
+    minter = new Minter(minterId);
+    minter.creationId = event.params.creationId;
+    minter.minter = event.params.minter;
+  }
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  minter.amount = minter.amount + 1;
 
-  entity.save()
-}
+  minter.save();
 
-export function handleProtocolFeeToUpdated(
-  event: ProtocolFeeToUpdatedEvent
-): void {
-  let entity = new ProtocolFeeToUpdated(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.previousFeeTo = event.params.previousFeeTo
-  entity.newFeeTo = event.params.newFeeTo
+  const creationId = event.params.creationId.toString();
+  let creation = Creation.load(creationId);
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  if (creation) {
+    record.creation = creation.id;
+    creation.mintedAmount = creation.mintedAmount.plus(record.amount);
+    creation.save();
+  }
 
-  entity.save()
-}
-
-export function handleTransferBatch(event: TransferBatchEvent): void {
-  let entity = new TransferBatch(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.operator = event.params.operator
-  entity.from = event.params.from
-  entity.to = event.params.to
-  entity.ids = event.params.ids
-  entity.values = event.params.values
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleTransferSingle(event: TransferSingleEvent): void {
-  let entity = new TransferSingle(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.operator = event.params.operator
-  entity.from = event.params.from
-  entity.to = event.params.to
-  entity.CreationFactory_id = event.params.id
-  entity.value = event.params.value
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleURI(event: URIEvent): void {
-  let entity = new URI(event.transaction.hash.concatI32(event.logIndex.toI32()))
-  entity.value = event.params.value
-  entity.CreationFactory_id = event.params.id
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
+  record.save();
 }
