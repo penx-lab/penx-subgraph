@@ -25,7 +25,11 @@ export function handleTipRequestExecuted(event: TipRequestExecutedEvent): void {
     tip.totalAmount = BigInt.fromI32(0);
   }
 
-  tip.totalAmount = tip.totalAmount.plus(event.params.amount);
+  const reward = event.params.amount
+    .times(record.tipperRewardPercent)
+    .div(BigInt.fromI64(1000000000000000000));
+
+  tip.totalAmount = tip.totalAmount.plus(event.params.amount).minus(reward);
 
   tip.save();
 }
