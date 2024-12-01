@@ -33,9 +33,9 @@ dataSources:
     name: Tip
     network: base
     source:
-      address: "0x9a37779f70a25B09BC5F075576b3C9C0c6caEbB1"
+      address: "0xa83D1edb468C872FF997C4C0c7F1471ad0B3526B"
       abi: Tip
-      startBlock: 22866121 
+      startBlock: 23134632
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
